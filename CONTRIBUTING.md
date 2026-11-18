@@ -9,6 +9,8 @@ This repo pins its toolchains so that local and CI environments match.
 - **Node.js+** — use the version in [`.nvmrc`](.nvmrc). If you use [nvm](https://github.com/nvm-sh/nvm), run `nvm use` in the repo root.
 Z- **Rust** — use the toolchain in [`rust-toolchain.toml`](rust-toolchain.toml). If you use [rustup](https://rustup.rs/), `rustup show` should report the pinned version and `rustup toolchain install` will fetch it if needed.
 
+The Node test runner checks `package.json`’s `engines.node` range before discovering tests. If it reports an unsupported version, run `nvm install` and `nvm use` in the repo root and retry.
+
 ## Install
 
 From the repo root:
