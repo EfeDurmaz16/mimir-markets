@@ -40,6 +40,15 @@ To run a single named test within a file, pass Node's test name pattern flag:
 node --import tsx --test --test-name-pattern="<pattern>" tests/node/<file>.test.ts
 ```
 
+### Runner options
+
+Run `npm run test:node -- --help` for text help. For tools, use
+`npm run --silent test:node -- --help-json` to get a JSON object with a
+`flags` array. Each entry describes the flag name, option key and default.
+Optional fields list aliases, negated forms, a path argument, or an option
+enabled by that flag. Path defaults are repository-relative. A null cache
+directory uses `MIMIR_NODE_TEST_CACHE_DIR` or the built-in cache root.
+
 ## Running a single contract test
 
 Contract tests are Rust tests in the `mimir-market` crate. To run one test by name:
