@@ -15,20 +15,30 @@ test("checks indexed files and directories without checking out either spelling"
   git(["init", "--quiet"]);
   git(["config", "core.ignorecase", "false"]);
   const blob = git(["hash-object", "-w", "--stdin"], "").trim();
+  // Git for Windows otherwise silently skips the newline fixture during update-index.
   const stage = (paths: string[]) =>
-    git(["update-index", "-z", "--index-info"], paths.map((p) => `100644 ${blob}\t${p}\0`).join(""));
+    git(
+      ["-c", "core.protectNTFS=false", "update-index", "-z", "--index-info"],
+      paths.map((p) => `100644 ${blob}\t${p}\0`).join(""),
+    );
   const check = () => spawnSync(process.execPath, [script], { cwd, encoding: "utf8" });
 
-  stage(["docs/b.md", "src/name\nfile.ts"]);
+  const initial = ["docs/b.md", "src/name\nfile.ts", "src/é space.ts"];
+  const indexed = () => git(["ls-files", "--cached", "-z"]).split("\0").filter(Boolean).sort();
+  stage(initial);
+  assert.deepEqual(indexed(), [...initial].sort());
   const clean = check();
   assert.equal(clean.status, 0, clean.stderr);
   assert.equal(clean.stderr, "");
 
-  stage(["src/Name\nfile.ts", "Docs/a.md"]);
+  const additions = ["src/Name\nfile.ts", "Docs/a.md", "src/É space.ts"];
+  stage(additions);
+  assert.deepEqual(indexed(), [...initial, ...additions].sort());
   const clash = check();
   assert.equal(clash.status, 1);
   assert.deepEqual(clash.stderr.trimEnd().split(/\r?\n/), [
     'Case-only tracked path collision: "Docs" / "docs"',
     'Case-only tracked path collision: "src/Name\\nfile.ts" / "src/name\\nfile.ts"',
+    'Case-only tracked path collision: "src/É space.ts" / "src/é space.ts"',
   ]);
 });
